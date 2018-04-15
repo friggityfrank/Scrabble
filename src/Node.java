@@ -15,15 +15,23 @@ public class Node implements Comparable<Node> {
 		
 	}
 	
+	// Constructor to store Letter information and parent Node
 	public Node (Character c, Node p) {
 		letter = c;
 		parent = p;
-		if (c != ' ')
+		// Check if blank space or '*' - assign parent's points + Letter's
+		//  point value if it is not
+		if (c != '_' && c != '*')
 			points = pointVals[(int) c - 96] + p.getPoints();
+		// If the letter is a blank space, assign parent's points
 		else if (p != null)
 			points = p.getPoints();
+		// Otherwise, it is null and should be ignored
 		else
 			points = 0;
+		// If '*', the word is marked as completed
+		if (c == '*')
+			isEnd = true;
 		children = new ArrayList<Node>();
 	}
 	
@@ -43,6 +51,7 @@ public class Node implements Comparable<Node> {
 		return children;
 	}
 	
+	// Method that returns a child Node using binary search
 	public Node getChild (Character c) {
 		int index = Collections.binarySearch(children, new Node(c, null));
 		if (index >= 0)
@@ -50,28 +59,23 @@ public class Node implements Comparable<Node> {
 		return null;
 	}
 	
+	// Method that returns a child using index
 	public Node getChild (int i) {
 		if (i < children.size() && i >= 0)
 			return children.get(i);
 		return null;
 	}
 	
-	public boolean endOfWord () {
-		return isEnd;
-	}
-	
+	// Method to check if the Node has a child containing the passed character
 	public boolean hasChild (Character c) {
-		if (c == ' ')
+		// Check for blank child
+		if (c == '_')
 			return presence[0];
+		// Return false if end of word
+		if (c == '*')
+			return false;
+		// Check for other letter
 		return presence[(int) c - 96];
-	}
-	
-	public void setLetter (Character c) {
-		letter = c;
-		if (c != ' ')
-			points = pointVals[(int) c - 96];
-		else
-			points = parent.getPoints();
 	}
 	
 	public void setParent (Node p) {
@@ -82,16 +86,22 @@ public class Node implements Comparable<Node> {
 		children = n;
 	}
 	
+	// Method to add child Node by passing a character
 	public Node addChild (Character c) {
-		if (c == ' ')
+		// Mark presence of children
+		if (c == '_')
 			presence[0] = true;
 		else
 			presence[(int) c - 96] = true;
+		// Create new Node, setting this as the parent
 		Node child = new Node(c, this);
+		// Add if empty
 		if (children.isEmpty())
 			children.add(child);
+		// Otherwise, find the appropriate index by using binary search
 		else {
 			int index = Collections.binarySearch(children,  child, new NodeComparator());
+			// If found, add at the appropriate index
 			if (index < 0)
 				children.add(-1 * (index - 1), child);
 		}
@@ -99,7 +109,11 @@ public class Node implements Comparable<Node> {
 	}
 	
 	public void endWord () {
-		isEnd = true;
+		children.add(new Node('*', this));
+	}
+	
+	public boolean isEnd () {
+		return isEnd;
 	}
 
 	@Override
