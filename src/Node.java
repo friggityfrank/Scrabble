@@ -8,7 +8,6 @@ public class Node implements Comparable<Node> {
 	private Node parent;
 	private ArrayList<Node> children = new ArrayList<Node>();
 	private int[] pointVals = {0, 1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10};
-	private boolean isEnd = false;
 	private boolean presence[] = new boolean[27];
 	
 	public Node () {
@@ -32,9 +31,6 @@ public class Node implements Comparable<Node> {
 		// Otherwise, it is null and should be ignored
 		else
 			points = 0;
-		// If '*', the word is marked as completed
-		if (letter == '*')
-			isEnd = true;
 	}
 	
 	public Character getLetter () {
@@ -69,9 +65,8 @@ public class Node implements Comparable<Node> {
 		// Check for blank child
 		if (lower == '_')
 			return presence[0];
-		// Return false if end of word
-		if (lower == '*')
-			return false;
+		if (c == '*') 
+			return (getChild('*') != null);
 		// Check for other letter
 		return presence[((int) lower) - 96];
 	}
@@ -102,18 +97,18 @@ public class Node implements Comparable<Node> {
 			int index = Collections.binarySearch(children, child, new NodeComparator());
 			// If found, add at the appropriate index
 			if (index < 0)
-				children.add((-1 * index) - 1, child);
+				children.add(-1 * index - 1, child);
 		}
 		return child;
-	}
-	
-	public boolean isEnd () {
-		return isEnd;
 	}
 
 	@Override
 	public int compareTo(Node o) {
-		return this.getLetter().compareTo(o.getLetter());
+		if (letter < o.getLetter())
+			return -1;
+		if (letter > o.getLetter())
+			return 1;
+		return 0;
 	}
 	
 	public String toString () {

@@ -144,10 +144,9 @@ public class ScrabblePlayer
     public Word getBestWord (String letters, int back, int ahead, char c) {
     	ArrayList<Word> wordList = new ArrayList<Word>();
     	Word best = new Word ("", 0), temp;
-    	Node traverse = dictionary.getRoot();
     	String bestS = best.getWord(), tempS;
     	int index = 0;
-    	findWord("", letters, 0, traverse, wordList, letters.charAt(7));
+    	findWord("", letters, 0, dictionary.getRoot(), wordList, letters.charAt(7));
     	for (int i = 0; i < wordList.size(); i++) {
     		temp = wordList.get(i);
     		tempS = temp.getWord();
@@ -169,32 +168,27 @@ public class ScrabblePlayer
     	return (s.substring(0, i) + s.substring(i + 1));
     }
     
-    public Word findWord (String currWord, String options, int p, Node n, ArrayList<Word> list, Character c) {
+    public void findWord (String currWord, String options, int p, Node n, ArrayList<Word> list, Character c) {
     	Node traverse = n;
-    	String out = currWord;
-    	int points = p;
-    	String contCheck = "" + Character.toLowerCase(c);
-    	if (n.hasChild('*') && currWord.contains(contCheck))
+    	if (n.hasChild('*'))
     		list.add(new Word(currWord, p));
     	for (int i = 0; i < options.length(); i++) {
     		if (options.charAt(i) == '_') {
     			for (int j = 0; j < n.getChildren().size(); j++) {
     				traverse = n.getChildren().get(j);
-        			if (traverse != null) {
-        				out += traverse.getLetter();
-        				points += traverse.getPoints();
-        				findWord(out, trimOut(options, i), points, traverse, list, c);
+        			if (traverse != null && traverse.getLetter() != '*') {
+        				findWord(currWord + Character.toLowerCase(traverse.getLetter()), trimOut(options, i),
+        						p + traverse.getPoints(), traverse, list, c);
         			}
     			}
-    		}
+    		} else {
     			traverse = n.getChild(options.charAt(i));
     			if (traverse != null) {
-    				out += traverse.getLetter();
-    				points += traverse.getPoints();
-    				findWord(out, trimOut(options, i), points, traverse, list, c);
+    				findWord(currWord + Character.toLowerCase(options.charAt(i)), trimOut(options, i),
+    						p + traverse.getPoints(), traverse, list, c);
     			}
+    		}
     	}
-    	return new Word(out, points);
     }
 
 }
