@@ -13,11 +13,6 @@ public class Word implements Comparable<Word> {
 		pointVal = p;
 	}
 	
-	public Word (char[] c, int p) {
-		thisWord = String.copyValueOf(c);
-		pointVal = p;
-	}
-	
 	public String getWord () {
 		return thisWord;
 	}

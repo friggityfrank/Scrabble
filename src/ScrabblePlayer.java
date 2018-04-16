@@ -68,12 +68,12 @@ public class ScrabblePlayer
     	ArrayList<int[]> startList = new ArrayList<int[]>();
     	if (orientation == 'h') {
     		availUp = row;
-    		availDown = 14 - (row + length);
+    		availDown = 14 - row;
     	} else {
     		availLeft = col;
-    		availRight = 14 - (col + length);
+    		availRight = 14 - col;
     	}
-    	String wordLetters = String.copyValueOf(availableLetters) + "X";
+    	String wordLetters = String.copyValueOf(availableLetters);
     	for (int i = 0; i < boardWord.length(); i++) {
     		wordLetters = wordLetters.substring(0, 7) + boardWord.charAt(i);
     		int startR; int startC;
@@ -81,15 +81,15 @@ public class ScrabblePlayer
     		if (orientation == 'h') {
     			tempW = getBestWord(wordLetters, availUp, availDown, wordLetters.charAt(7));
     			words.add(tempW);
-    			startC = tempW.getWord().indexOf(wordLetters.charAt(7));
-    			startR = row - boardWord.indexOf(wordLetters.charAt(7));
+    			startC = col + i;
+    			startR = row - tempW.getWord().length() + tempW.getWord().indexOf(wordLetters.charAt(7));
     			startList.add(new int[]{startR, startC});
     		} else {
     			tempW = getBestWord(wordLetters, availUp, availDown, wordLetters.charAt(7));
     			words.add(tempW);
-    			startC = col - boardWord.indexOf(wordLetters.charAt(7));
-    			startR = tempW.getWord().indexOf(wordLetters.charAt(7));
-    			startList.add(new int[]{startR, startC});
+    			startC = col - tempW.getWord().length() + tempW.getWord().indexOf(wordLetters.charAt(7));
+    			startR = row + i;
+    			startList.add(new int[]{startC, startR});
     		}
     	}
 		Word best, temp;
@@ -110,7 +110,6 @@ public class ScrabblePlayer
     		bestX = startList.get(index)[0];
     		bestY = startList.get(index)[1];
     	}
-
         return  new ScrabbleWord(bestS, bestX, bestY, orientation);
     }
     
@@ -146,14 +145,14 @@ public class ScrabblePlayer
     	Word best = new Word ("", 0), temp;
     	String bestS = best.getWord(), tempS;
     	int index = 0;
-    	findWord("", letters, 0, dictionary.getRoot(), wordList, letters.charAt(7));
-    	for (int i = 0; i < wordList.size(); i++) {
-    		temp = wordList.get(i);
+    	findWord("", letters, 0, dictionary.getRoot(), wordList, c);
+    	for (int k = 0; k < wordList.size(); k++) {
+    		temp = wordList.get(k);
     		tempS = temp.getWord();
-    		index = tempS.indexOf(c);
-    		if (best.getPoints() < temp.getPoints() && (back > index && ahead > (tempS.length() - (index - 1)))) {
+    		index = tempS.indexOf(Character.toLowerCase(c));
+    		if (best.getPoints() < temp.getPoints() && index > -1) {
     				best = temp;
-    				bestS = best.getWord();
+    				bestS = tempS;
     		}
     	}
     	
