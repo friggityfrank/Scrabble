@@ -45,6 +45,10 @@ public class Node implements Comparable<Node> {
 		return parent;
 	}
 	
+	public void setPoints (int p) {
+		points = p;
+	}
+	
 	public ArrayList<Node> getChildren () {
 		return children;
 	}

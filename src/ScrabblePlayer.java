@@ -57,24 +57,36 @@ public class ScrabblePlayer
 
     public ScrabbleWord getScrabbleWord(char[][] board, char[] availableLetters) {
 
+    	// Get word and relevant data, then organize it
     	String rawWord = getWordFromBoard(board);
     	String boardWord = rawWord.substring(4);
     	int row = Integer.parseInt(rawWord.substring(0, 1));
     	int col = Integer.parseInt(rawWord.substring(1, 2));
     	int length = Integer.parseInt(rawWord.substring(2, 3));
     	char orientation = rawWord.charAt(3);
+    	// Declare variables for available cells around the word
     	int availLeft = 0, availRight = 0, availUp = 0, availDown = 0;
+    	// Declare lists to store words and locations
     	ArrayList<Word> words = new ArrayList<Word>();
     	ArrayList<int[]> startList = new ArrayList<int[]>();
+    	// Determine availability using orientation
     	if (orientation == 'h') {
     		availUp = row;
     		availDown = 14 - row;
+    		availLeft = col;
+    		availRight = 15 - (col + length);
     	} else {
+    		availUp = row;
+    		availDown = 15 - (row + length);
     		availLeft = col;
     		availRight = 14 - col;
     	}
+    	// Store available letters
     	String wordLetters = String.copyValueOf(availableLetters);
+    	// Iterate possible words from available letters and those present on the board
+    	char newOr = 'h';
     	for (int i = 0; i < boardWord.length(); i++) {
+    		// Store board letter
     		wordLetters = wordLetters.substring(0, 7) + boardWord.charAt(i);
     		int startR; int startC;
     		Word tempW;
@@ -82,19 +94,21 @@ public class ScrabblePlayer
     			tempW = getBestWord(wordLetters, availUp, availDown, wordLetters.charAt(7));
     			words.add(tempW);
     			startC = col + i;
-    			startR = row - tempW.getWord().length() + tempW.getWord().indexOf(wordLetters.charAt(7));
+    			startR = row - tempW.getWord().indexOf(Character.toLowerCase(boardWord.charAt(i)));
     			startList.add(new int[]{startR, startC});
+    			newOr = 'v';
     		} else {
-    			tempW = getBestWord(wordLetters, availUp, availDown, wordLetters.charAt(7));
+    			tempW = getBestWord(wordLetters, availLeft, availRight, wordLetters.charAt(7));
     			words.add(tempW);
-    			startC = col - tempW.getWord().length() + tempW.getWord().indexOf(wordLetters.charAt(7));
     			startR = row + i;
-    			startList.add(new int[]{startC, startR});
+    			startC = col - tempW.getWord().length() + tempW.getWord().indexOf(Character.toLowerCase(board[col][startR])) + 1;
+    			startList.add(new int[]{startR, startC});
+    			newOr = 'h';
     		}
     	}
 		Word best, temp;
 		String bestS = "", tempS;
-		int bestX = 0, bestY = 0, index = 0;
+		int bestR = 0, bestC = 0, index = 0;
     	if (!words.isEmpty()) {
     		best = words.get(0);
     		bestS = best.getWord();
@@ -107,10 +121,10 @@ public class ScrabblePlayer
     					index = i;
     			}
     		}
-    		bestX = startList.get(index)[0];
-    		bestY = startList.get(index)[1];
+    		bestR = startList.get(index)[0];
+    		bestC = startList.get(index)[1];
     	}
-        return  new ScrabbleWord(bestS, bestX, bestY, orientation);
+        return  new ScrabbleWord(bestS.toUpperCase(), bestR, bestC, newOr);
     }
     
     public String getWordFromBoard (char[][] board) {
@@ -145,7 +159,7 @@ public class ScrabblePlayer
     	Word best = new Word ("", 0), temp;
     	String bestS = best.getWord(), tempS;
     	int index = 0;
-    	findWord("", letters, 0, dictionary.getRoot(), wordList, c);
+    	findWord("", letters, 0, dictionary.getRoot(), wordList, c, false);
     	for (int k = 0; k < wordList.size(); k++) {
     		temp = wordList.get(k);
     		tempS = temp.getWord();
@@ -167,7 +181,7 @@ public class ScrabblePlayer
     	return (s.substring(0, i) + s.substring(i + 1));
     }
     
-    public void findWord (String currWord, String options, int p, Node n, ArrayList<Word> list, Character c) {
+    public void findWord (String currWord, String options, int p, Node n, ArrayList<Word> list, Character c, boolean foundBoard) {
     	Node traverse = n;
     	if (n.hasChild('*'))
     		list.add(new Word(currWord, p));
@@ -176,15 +190,19 @@ public class ScrabblePlayer
     			for (int j = 0; j < n.getChildren().size(); j++) {
     				traverse = n.getChildren().get(j);
         			if (traverse != null && traverse.getLetter() != '*') {
-        				findWord(currWord + Character.toLowerCase(traverse.getLetter()), trimOut(options, i),
-        						p + traverse.getPoints(), traverse, list, c);
+        				findWord(currWord + '_', trimOut(options, i),
+        						p, traverse, list, c, foundBoard);
         			}
     			}
     		} else {
     			traverse = n.getChild(options.charAt(i));
     			if (traverse != null) {
-    				findWord(currWord + Character.toLowerCase(options.charAt(i)), trimOut(options, i),
-    						p + traverse.getPoints(), traverse, list, c);
+    				if (i == options.length() - 1 && !foundBoard)
+    					findWord(currWord, trimOut(options, i),
+    						p, traverse, list, c, true);
+    				else
+    					findWord(currWord + Character.toLowerCase(options.charAt(i)), trimOut(options, i),
+        						p + traverse.getPoints(), traverse, list, c, foundBoard);
     			}
     		}
     	}
