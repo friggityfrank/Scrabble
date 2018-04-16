@@ -23,19 +23,18 @@ public class Trie {
 			return;
 		// Traversal Node declared and assigned to Trie root
 		Node traverse = root;
-		// char array to store passed String 
-		char[] word = s.toCharArray();
 		// Loop to iterate through array
-		for (int i = 0; i < word.length; i++) {
+		for (int i = 0; i < s.length(); i++) {
 			// If letter exists on the board, move to the appropriate Node
-			if (traverse.hasChild(word[i]))
-				traverse = traverse.getChild(word[i]);
+			if (traverse.hasChild(s.charAt(i)))
+				traverse = traverse.getChild(s.charAt(i));
 			// Otherwise, add a new Node
 			else
-				traverse = traverse.addChild(word[i]);
+				traverse = traverse.addChild(s.charAt(i));
 		}
 		// End the word
-		traverse.endWord();
+		if (traverse != null)
+			traverse.addChild('*');
 	}
 	
 }
