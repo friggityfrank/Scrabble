@@ -161,7 +161,7 @@ public class ScrabblePlayer
     	Word best = new Word ("", 0), temp;
     	String bestS = best.getWord(), tempS;
     	int index = 0;
-    	findWord("", letters, 0, dictionary.getRoot(), wordList, c, false);
+    	findWord("", letters, 0, dictionary.getRoot(), wordList, false);
     	for (int k = 0; k < wordList.size(); k++) {
     		temp = wordList.get(k);
     		tempS = temp.getWord();
@@ -183,7 +183,7 @@ public class ScrabblePlayer
     	return (s.substring(0, i) + s.substring(i + 1));
     }
     
-    public void findWord (String currWord, String options, int p, Node n, ArrayList<Word> list, Character c, boolean foundBoard) {
+    public void findWord (String currWord, String options, int p, Node n, ArrayList<Word> list, boolean foundBoard) {
     	Node traverse = n;
     	if (n.isEnd())
     		list.add(new Word(currWord, p));
@@ -193,7 +193,7 @@ public class ScrabblePlayer
     				traverse = n.getChildren().get(j);
         			if (traverse != null && traverse.getLetter() != '*') {
         				findWord(currWord + '_', trimOut(options, i),
-        						p, traverse, list, c, foundBoard);
+        						p, traverse, list, foundBoard);
         			}
     			}
     		} else {
@@ -201,10 +201,10 @@ public class ScrabblePlayer
     			if (traverse != null) {
     				if (i == options.length() - 1 && !foundBoard)
     					findWord(currWord, trimOut(options, i),
-    						p, traverse, list, c, true);
+    						p, traverse, list, true);
     				else
     					findWord(currWord + Character.toLowerCase(options.charAt(i)), trimOut(options, i),
-        						p + traverse.getPoints(), traverse, list, c, foundBoard);
+        						p + traverse.getPoints(), traverse, list, foundBoard);
     			}
     		}
     	}

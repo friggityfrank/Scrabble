@@ -26,7 +26,7 @@ public class Trie {
 		// Loop to iterate through array
 		for (int i = 0; i < s.length(); i++) {
 			// If letter exists on the board, move to the appropriate Node
-			if (traverse.hasChild(s.charAt(i)))
+			if (traverse.getChild(s.charAt(i)) != null)
 				traverse = traverse.getChild(s.charAt(i));
 			// Otherwise, add a new Node
 			else
