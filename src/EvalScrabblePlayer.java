@@ -88,8 +88,8 @@ public class EvalScrabblePlayer {
     
     // points for letters
     private static final char[] LETTERS =
-    {'_', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-     'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+    {'_', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+     'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
     private static final int[] LETTERS_SCORE =
     {0, 1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3,
      1, 1, 3, 10,1, 1, 1, 1, 4, 4, 8, 4, 10 };
@@ -189,6 +189,7 @@ public class EvalScrabblePlayer {
         //to do: Randomly pick 7 letters according to the distribution of letters in
         //       the wiki page in the assignment
         generateAvailableLetters(availableLetters, rand);
+        //System.out.printf("available Letters: %s%n", new String(availableLetters));
                 
         // the player might change board and/or availableLetters, give the player a clone
         char[][] boardClone = board.clone();
@@ -223,12 +224,12 @@ public class EvalScrabblePlayer {
      * Setup the board
      */
     private static ScrabbleWord generateBoard(char[][] board, ArrayList<String> dictionary, Random rand)
-    {        
-	// initialize board to spaces
-	for (int row = 0; row < board.length; row++)
-	    for (int col = 0; col < board[0].length; col++)
-		board[row][col] = ' ';
-	
+    {
+        // initialize the board
+        for (int i = 0; i < board.length; i++)
+            for (int j = 0; j < board[0].length; j++)
+                board[i][j] = ' ';
+        
         // randomly choose a word
         int randomIndex = rand.nextInt(dictionary.size());
         String initialWord = dictionary.get(randomIndex);
@@ -241,7 +242,7 @@ public class EvalScrabblePlayer {
         // choose the orientation and position, put the initial word onto the board
         boolean flipCoin = rand.nextBoolean();
         char orientation = 'h';
-        int rowPos, colPos;
+        int rowPos, colPos, startRow, startCol;
         // flipCoin == true, then horizontal
         if (flipCoin)
         {
@@ -252,6 +253,9 @@ public class EvalScrabblePlayer {
             // but colPos cannot not be 15
             // for example, if word.length = 6, then Max(colPos) = 9 = 15 - 6
             colPos = rand.nextInt(board[0].length - initialWord.length());
+            // store the starting position
+            startRow = rowPos;
+            startCol = colPos;
             // horizontal, so each letter has the same rowID
             for (int i = 0; i < initialWord.length(); i++)
             {
@@ -266,6 +270,9 @@ public class EvalScrabblePlayer {
             // similarly, colPos = 0 ~ 14, rowPos = 0 ~ (15 - word.length)
             colPos = rand.nextInt(board[0].length);
             rowPos = rand.nextInt(board.length - initialWord.length());
+            // store the starting position
+            startRow = rowPos;
+            startCol = colPos;
             // vertical, so each letter has the same colID
             for (int i = 0; i < initialWord.length(); i++)
             {
@@ -274,7 +281,7 @@ public class EvalScrabblePlayer {
             }
         }
         
-        ScrabbleWord wordOnBoard = new ScrabbleWord(initialWord, rowPos, colPos, orientation);
+        ScrabbleWord wordOnBoard = new ScrabbleWord(initialWord, startRow, startCol, orientation);
         return wordOnBoard;
     }
     
@@ -291,8 +298,8 @@ public class EvalScrabblePlayer {
         int[] distribution = {2, 9, 2, 2, 4, 12, 2, 3, 2, 9, 1, 1, 4, 2,
                               6, 8, 2, 1, 6, 4,  6, 4, 2, 2, 1, 2, 1};
         
-        char[] allCharacters = {'_', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-        'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+        char[] allCharacters = {'_', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+        'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
         
         int tilesNum = 100;
         for (int i = 0; i < 7; i++)
@@ -394,7 +401,7 @@ public class EvalScrabblePlayer {
                                        char[] availableLetters, ArrayList<String> dictionary) 
     {
         // check if it is a valid word
-        ScrabbleWord returnWord = validPlayWord(playerWord, initialWord, board, availableLetters, dictionary);        
+        ScrabbleWord returnWord = validPlayWord(playerWord, initialWord, board, availableLetters, dictionary);
         if (returnWord == null)
             return 0;
         
@@ -405,7 +412,6 @@ public class EvalScrabblePlayer {
         String playerW = playerWord.getScrabbleWord();
         if (!returnWord.getScrabbleWord().equals(playerW))
             totalPoints += singleWordPoints(returnWord);
-        
         return totalPoints;
     }
     
@@ -425,15 +431,15 @@ public class EvalScrabblePlayer {
             
             // find the score for this letter
             int letterPoints = 0;
-            for (char tempChar: LETTERS)
+            for (int k = 0; k < LETTERS.length; k++)
             {
-                if (tempChar == letterInWord)
-                    letterPoints = LETTERS_SCORE[tempChar];
+                if (LETTERS[k] == letterInWord)
+                    letterPoints = LETTERS_SCORE[k];
             }
             
             //System.out.printf("The %d th letter of %s is %c: %d points, ", i, playerW, letterInWord, letterPoints);
             
-            //System.out.printf("pos (row, col): (%d, %d), ", rowID, colID);
+            //System.out.printf("pos (row, col): (%d, %d)%n", rowID, colID);
             // find the score on board
             String position = Integer.toString(rowID) + Integer.toString(colID);
             String bonusFromBoard = "";
@@ -466,7 +472,6 @@ public class EvalScrabblePlayer {
             
             // sum them up
             totalScore = totalScore + letterPoints;
-                
         }
         // final score must multiply the bonus
         totalScore = totalScore * bonusForWord;
@@ -550,9 +555,9 @@ public class EvalScrabblePlayer {
             }
         }
         // not empty means some letters that are not in availableLetters are used
-        if (!playerLetters.isEmpty())
-            //return false;
+        if (!playerLetters.isEmpty()){
             return null;
+        }
         
         ////////////////////////////////////////////////////////////////////////////////
         // Invalid case 4: connection
@@ -569,17 +574,20 @@ public class EvalScrabblePlayer {
         //                                            initialWord at the end or in the front
         else
         {
-            // if two words are intersecting, return playWord
+            // if two words are not intersecting
             if (!isIntersecting(playWord, initialWord))
-                return null;
-            // check if it is case 2
-            // isExtending() return: 1. null when invalid
-            //                       2. a new Word
-            else
+            {
+                // check if extending (valid case 2)
                 returnWord = isExtending(playWord, initialWord, dictionary);
+                return returnWord;
+            }
+            // intersection is true
+            else
+                returnWord = playWord;
         }
         
         // all the cases have been checked, return
+        //System.out.println("returnWord "+ returnWord.getScrabbleWord());
         return returnWord;
     }
 
@@ -722,9 +730,9 @@ public class EvalScrabblePlayer {
             iEndCol = iStartCol + initialW.length() - 1;
             
             // if they are intersecting, then (pStartRow <= iStartRow <= pEndRow) AND
-            //                                (iStartCol <= pStartCol <= iEndRow)
+            //                                (iStartCol <= pStartCol <= iEndCol)
             if ((pStartRow <= iStartRow) && (iStartRow <= pEndRow) &&
-                (iStartCol <= pStartCol) && (pStartCol <= iEndRow))
+                (iStartCol <= pStartCol) && (pStartCol <= iEndCol))
             {
                 // check if the letters are then same 
                 if (playW.charAt(iStartRow - pStartRow) == initialW.charAt(pStartCol - iStartCol))
@@ -736,7 +744,6 @@ public class EvalScrabblePlayer {
             else
                 intersection = false;
         }
-        
         return intersection;
     }
     
@@ -745,7 +752,7 @@ public class EvalScrabblePlayer {
     * @param playWord: a ScrabbleWord that the player wants to add
     * @param initialWord: a ScrabbleWord in the board at the beginning
     * @param dictionary
-    * @return a ScrabbleWord can be a newWord or null
+    * @return a ScrabbleWord can be a newWord or playWord
     */
     private static ScrabbleWord isExtending(ScrabbleWord playWord, ScrabbleWord initialWord,
                                             ArrayList<String> dictionary)
