@@ -124,6 +124,8 @@ public class ScrabblePlayer
     		bestR = startList.get(index)[0];
     		bestC = startList.get(index)[1];
     	}
+		words = null;
+		startList = null;
         return  new ScrabbleWord(bestS.toUpperCase(), bestR, bestC, newOr);
     }
     
@@ -141,10 +143,10 @@ public class ScrabblePlayer
     }
     
     public String getOrientation (char[][] board, int r, int c) {
-    	String out = "";
-    	if (board[r][c + 1] != ' ') {
-    		out += 'h';
-    		while (board[r][c] != ' ')
+    	String out = "";				// Output string declared
+    	if (board[r][c + 1] != ' ') {	// Check board space to the right for a character
+    		out += 'h';					// If found, add orientation to string
+    		while (board[r][c] != ' ')	//
     			out += board[r][c++];
     	} else {
     		out += 'v';
@@ -183,7 +185,7 @@ public class ScrabblePlayer
     
     public void findWord (String currWord, String options, int p, Node n, ArrayList<Word> list, Character c, boolean foundBoard) {
     	Node traverse = n;
-    	if (n.hasChild('*'))
+    	if (n.isEnd())
     		list.add(new Word(currWord, p));
     	for (int i = 0; i < options.length(); i++) {
     		if (options.charAt(i) == '_') {

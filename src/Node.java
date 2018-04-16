@@ -8,7 +8,6 @@ public class Node implements Comparable<Node> {
 	private Node parent;
 	private ArrayList<Node> children = new ArrayList<Node>();
 	private int[] pointVals = {0, 1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10};
-	private boolean presence[] = new boolean[27];
 	
 	public Node () {
 		
@@ -64,15 +63,8 @@ public class Node implements Comparable<Node> {
 	
 	
 	// Method to check if the Node has a child containing the passed character
-	public boolean hasChild (Character c) {
-		char lower = Character.toLowerCase(c);
-		// Check for blank child
-		if (lower == '_')
-			return presence[0];
-		if (c == '*') 
-			return (getChild('*') != null);
-		// Check for other letter
-		return presence[((int) lower) - 96];
+	public boolean isEnd () {
+		return (getChild('*') != null);
 	}
 	
 	public void setParent (Node p) {
@@ -87,10 +79,6 @@ public class Node implements Comparable<Node> {
 	public Node addChild (Character c) {
 		// Mark presence of children
 		char lower = Character.toLowerCase(c);
-		if (c == '_')
-			presence[0] = true;
-		else if (c != '*')
-			presence[((int) lower) - 96] = true;
 		// Create new Node, setting this as the parent
 		Node child = new Node(lower, this);
 		// Add if empty
