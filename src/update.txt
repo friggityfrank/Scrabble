@@ -1,0 +1,80 @@
+
+<----Comment---->
+So from what i understand from your code when adding to the back of the word i considered two parts
+if the word is vertical or if the word is horizontal. Based on what you wrote for the vertical component I would add 
+an extra step as stated below in a weird version of an algorithm /code. It wont run but you said to send you what i was 
+thinking 
+
+<-------------------------------------------------------------------> 
+
+if (orientation == 'h') {
+    			tempW = getBestWord(wordLetters, availUp, availDown, wordLetters.charAt(7));
+    			words.add(tempW);
+    			startC = length of the user inputed string +  + 1 
+    			startR = row of the user inputed word 
+              
+     // then you would have to compare the points from the best words so far and store the best one with the highest point value 
+
+
+
+    		}
+<-------------------------------------------------------------------> 
+
+You would do the same but reversed for the check if it was vertical 
+
+<-------------------------------------------------------------------> 
+
+if (orientation == 'v') {
+    			tempW = getBestWord(wordLetters, availUp, availDown, wordLetters.charAt(7));
+    			words.add(tempW);
+    			startC =  the colm of the user inputed word  
+    			startR = length of the user inputed string +  + 1 
+              
+     // then you would have to compare the points from the best words so far and store the best one with the highest point value 
+
+
+
+    		}
+
+<----------------------------------------------------------------------->
+not sure if you looked on the message i sent on fb but i dont think you attributed for
+the the different bonus score tiles i might be wrong not sure how you would implement that though 
+
+
+they are certain positions on the board so you can have the code check if the row and the colm are both equal to this 
+hard code it. or store it rinto an arraylist and have a quick little for loop that goes through and asserts the points as needed 
+
+something around this :
+
+<----------------------------------------------------------------------->
+
+class extrapoint {
+
+ int row = 0;
+ int col = 0;
+ int bonus = 0; 
+
+
+}
+
+
+ ArrayList<extrapoint> bonuses  = new ArrayList<extrapoint>();
+
+
+for( int i = 0 ; i < bonuses.size() ; i++){
+   
+if (row == bonuses[i].row && col == bonuses[i].col)
+
+   points = bonus + initial points 
+
+}
+
+// now i know this takes up alot of space and we were trying to stop taking up space but it was the best option that i could come up with at 
+   four in the morning 
+
+<--------------------------------------------->
+
+
+Thats pretty much what i have let me know if you need anything im free after 12:15 till 2 which is our deadline remember we have to choose a 
+team name for submision. Again sorry for being useless 
+
