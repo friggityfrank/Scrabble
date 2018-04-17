@@ -1,13 +1,16 @@
 /*
 
-  Authors (group members):
-  Email addresses of group members:
-  Group name:
+  Authors (group members): Frank Savino, Gavin Smith
+  Email addresses of group members:	fsavino2014@my.fit.edu, gsmith2016@my.fit.edu
+  Group name: 23f
 
-  Course:
-  Section:
+  Course:  CSE2010
+  Section: 2/3
 
   Description of the overall algorithm and key data structures:
+  
+  	This program will generate a Scrabble Word from 7 given letter tiles and the letters that
+   are present on the board. Recursion is used to find valid words stored within a dictionary Trie
 
 
 */
@@ -25,16 +28,16 @@ public class ScrabblePlayer
     // initialize ScrabblePlayer with a file of English words
     public ScrabblePlayer(String wordFile) {
     	
-    	String input;
-    	try {
-    		FileReader fr = new FileReader(wordFile);
+    	String input;			// String to handle input
+    	try {					// try-catch to allow for input
+    		FileReader fr = new FileReader(wordFile);		// Readers declared
     		BufferedReader br = new BufferedReader(fr);
     		while ((input = br.readLine()) != null) {
-    			dictionary.addWord(input);
+    			dictionary.addWord(input);			// Add words while file is being read
     		}
-    		br.close();
+    		br.close();								// Close readers
     		fr.close();
-    	} catch (IOException e) {
+    	} catch (IOException e) {			// Throw exception if necessary
     		e.printStackTrace();
     	}
     	
@@ -85,129 +88,135 @@ public class ScrabblePlayer
     	String wordLetters = String.copyValueOf(availableLetters);
     	// Iterate possible words from available letters and those present on the board
     	char newOr = 'h';
+    	int index = 0;
+    	Word compare = new Word("", 0);
     	for (int i = 0; i < boardWord.length(); i++) {
-    		// Store board letter
-    		wordLetters = wordLetters.substring(0, 7) + boardWord.charAt(i);
-    		int startR; int startC;
-    		Word tempW;
-    		if (orientation == 'h') {
-    			tempW = getBestWord(wordLetters, availUp, availDown, wordLetters.charAt(7));
-    			words.add(tempW);
-    			startC = col + i;
+    		wordLetters = wordLetters.substring(0, 7) + boardWord.charAt(i);    		// Store board letter
+    		int startR; int startC;    		// Declare player word's start row and column
+    		Word tempW;			// Declare temp word for comparison
+    		if (orientation == 'h') {			// Check word with horizonal orientation
+    			tempW = getBestWord(wordLetters, availUp, availDown, wordLetters.charAt(7));	// Store best word
+    			startC = col + i;	// Store starting row and column of the new word
     			startR = row - tempW.getWord().indexOf(Character.toLowerCase(boardWord.charAt(i)));
     			startList.add(new int[]{startR, startC});
-    			newOr = 'v';
-    		} else {
+    			newOr = 'v';		// Set word's orientation
+    		} else {				// Perform same operation for vertical orientation words
     			tempW = getBestWord(wordLetters, availLeft, availRight, wordLetters.charAt(7));
-    			words.add(tempW);
     			startR = row + i;
     			startC = col - tempW.getWord().length() + tempW.getWord().indexOf(Character.toLowerCase(board[col][startR])) + 1;
     			startList.add(new int[]{startR, startC});
     			newOr = 'h';
     		}
-    	}
-		Word best, temp;
-		String bestS = "", tempS;
-		int bestR = 0, bestC = 0, index = 0;
-    	if (!words.isEmpty()) {
-    		best = words.get(0);
-    		bestS = best.getWord();
-    		for (int i = 1; i < words.size(); i++) {
-    			temp = words.get(i);
-    			tempS = temp.getWord();
-    			if (best.getPoints() < temp.getPoints()) {
-    					best = temp;
-    					bestS = best.getWord();
-    					index = i;
-    			}
+    		if (compare.getPoints() < tempW.getPoints()) {	// Compare points of the two words
+    			compare = tempW;			// Store the highest value word
+    			index = i;					// Store coordinate index of the word
     		}
-    		bestR = startList.get(index)[0];
-    		bestC = startList.get(index)[1];
     	}
-		words = null;
-		startList = null;
-        return  new ScrabbleWord(bestS.toUpperCase(), bestR, bestC, newOr);
+		int bestR = startList.get(index)[0];	// Fetch coordinates
+    	int bestC = startList.get(index)[1];
+    	
+        return  new ScrabbleWord(compare.getWord().toUpperCase(), bestR, bestC, newOr);	// Return new word
     }
     
+    // String to get information from word on board
     public String getWordFromBoard (char[][] board) {
-    	boolean foundOrientation = false;
-    	String out = "";
-    	for (int i = 0; i < 15; i++)
-    		for (int j = 0; j < 15; j++)
-    			if (!foundOrientation && board[i][j] != ' ') {
+    	String out = "";					// Output string declared
+    	for (int i = 0; i < 15; i++)			// Nested loops to iterate through board
+    		for (int j = 0; j < 15; j++)		
+    			if (board[i][j] != ' ') {		// If board space contains non space character, fetch word and information
     				out = getOrientation(board, i, j);
-    				out = ("" + i + "" + j + "" + (out.length() - 1) + out);
-    				return out;
+    				out = ("" + i + "" + j + "" + (out.length() - 1) + out);	// Return row, col, length, orientation, and
+    				return out;													//  contents of the word
     			}
     	return out;
     }
     
+    // Method that returns orientation and contents of word on the Scrabble board
     public String getOrientation (char[][] board, int r, int c) {
     	String out = "";				// Output string declared
     	if (board[r][c + 1] != ' ') {	// Check board space to the right for a character
     		out += 'h';					// If found, add orientation to string
-    		while (board[r][c] != ' ')	//
-    			out += board[r][c++];
-    	} else {
+    		while (board[r][c] != ' ')	// Get letters that make up string
+    			out += board[r][c++];	// Add to output string
+    	} else {						// Repeat for vertical cases
     		out += 'v';
     		while (board[r][c] != ' ')
     			out += board[r++][c];
     	}
-    	return out;
+    	return out;						// Return output string
     }
     
+    // Method that calls findWord() to get best word. 
     public Word getBestWord (String letters, int back, int ahead, char c) {
-    	ArrayList<Word> wordList = new ArrayList<Word>();
-    	Word best = new Word ("", 0), temp;
-    	String bestS = best.getWord(), tempS;
-    	int index = 0;
-    	findWord("", letters, 0, dictionary.getRoot(), wordList, false);
-    	for (int k = 0; k < wordList.size(); k++) {
-    		temp = wordList.get(k);
-    		tempS = temp.getWord();
-    		index = tempS.indexOf(Character.toLowerCase(c));
-    		if (best.getPoints() < temp.getPoints() && index > -1) {
-    				best = temp;
-    				bestS = tempS;
-    		}
-    	}
-    	
+    	Word best = new Word ("", 0);
+    	best = findWord("", letters, 0, dictionary.getRoot(), new Word("", 0), false);
     	return best;
     }
     
+    // Method to remove character from string
     public String trimOut (String s, int i) {
-    	if (i == 0)
+    	if (i == 0)		// Return substring(1) if first char is being removed
     		return s.substring(1);
-    	if (i == s.length() - 1)
+    	if (i == s.length() - 1) 	// Return substring(0, n-1) if last char removed
     		return s.substring(0, i - 1);
-    	return (s.substring(0, i) + s.substring(i + 1));
+    	return (s.substring(0, i) + s.substring(i + 1)); // Otherwise, perform appropriate substring operation
     }
     
-    public void findWord (String currWord, String options, int p, Node n, ArrayList<Word> list, boolean foundBoard) {
+    // Recursive method to find the highest point word from a set of characters
+    public Word findWord (String currWord, String options, int p, Node n, Word compare, boolean foundBoard) {
+    	Word temp = compare;							// Store variables from parameters 
     	Node traverse = n;
-    	if (n.isEnd())
-    		list.add(new Word(currWord, p));
-    	for (int i = 0; i < options.length(); i++) {
-    		if (options.charAt(i) == '_') {
+    	if (n.isEnd()) {							// Check if current Node can end a word
+    		if (temp.getPoints() < p)				// If so, check if it has more points than the given parameter
+    			temp = new Word(currWord, p);		// If it has more points, store as a new word
+    	}
+    	for (int i = 0; i < options.length(); i++) {	// Loop through all available letters
+    		if (options.charAt(i) == '_') {				// Check for blank space, iterating through all 26 letters if the case
     			for (int j = 0; j < n.getChildren().size(); j++) {
-    				traverse = n.getChildren().get(j);
-        			if (traverse != null && traverse.getLetter() != '*') {
-        				findWord(currWord + '_', trimOut(options, i),
-        						p, traverse, list, foundBoard);
+    				traverse = n.getChildren().get(j);	// If letter is available, check the child
+        			if (traverse != null && traverse.getLetter() != '*') {	// If valid, call findWord with the string
+        				temp = findWord(currWord + '_', trimOut(options, i),//  appended with blank space
+        						p, traverse, temp, foundBoard);
         			}
     			}
-    		} else {
+    		} else {						// If not blank, only check for child containing available letter
     			traverse = n.getChild(options.charAt(i));
     			if (traverse != null) {
-    				if (i == options.length() - 1 && !foundBoard)
-    					findWord(currWord, trimOut(options, i),
-    						p, traverse, list, true);
-    				else
-    					findWord(currWord + Character.toLowerCase(options.charAt(i)), trimOut(options, i),
-        						p + traverse.getPoints(), traverse, list, foundBoard);
+    				if (i == options.length() - 1 && !foundBoard) 		// Check if board char has been found
+    					temp = findWord(currWord, trimOut(options, i),	// If yes, flag it has been found for
+    						p, traverse, temp, true);					//  future loops
+    				else					// Otherwise, amend character to string when found.
+    					temp = findWord(currWord + Character.toLowerCase(options.charAt(i)), trimOut(options, i),
+        						p + traverse.getPoints(), traverse, temp, foundBoard);
     			}
     		}
     	}
+    	return temp; 	// Return best word
     }
+    
+    /*
+    public Word findWordExtend (String currWord, String options, int p, Node n, String stock, Word compare) {
+    	Node traverse = n;
+    	Word temp = compare;
+    	if (n.isEnd()) {
+    		if (temp.getPoints() < p)
+    			temp = new Word(currWord, p);
+    		
+    	}
+    		
+    }
+    */
+    
+    // Method to check if a full string is stored in the trie
+    public boolean confirmWord (String s, Node n) {
+    	Node traverse = n;			// Objects declared for trie traversal and checking
+    	String checkWord = s;
+    	for (int i = 0; i < checkWord.length(); i++) {	// Loop to traverse through length of string
+    		if ((traverse = traverse.getChild(checkWord.charAt(i))) == null) // Check if the passed Node has this child
+    			return false;							// If not, return false
+    	}
+    	return true; 									// Otherwise, trturn true
+    }
+    
 
 }
