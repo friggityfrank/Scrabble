@@ -23,11 +23,12 @@ import java.util.*;
 
 public class ScrabblePlayer
 {
-	Trie dictionary = new Trie();
+	private Trie dictionary = new Trie();
+	private int[] pointVals = {0, 1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10};
+    private Multipliers multi = new Multipliers();
 
     // initialize ScrabblePlayer with a file of English words
     public ScrabblePlayer(String wordFile) {
-    	
     	String input;			// String to handle input
     	try {					// try-catch to allow for input
     		FileReader fr = new FileReader(wordFile);		// Readers declared
@@ -62,11 +63,12 @@ public class ScrabblePlayer
 
     	// Get word and relevant data, then organize it
     	String rawWord = getWordFromBoard(board);
-    	String boardWord = rawWord.substring(4);
-    	int row = Integer.parseInt(rawWord.substring(0, 1));
-    	int col = Integer.parseInt(rawWord.substring(1, 2));
-    	int length = Integer.parseInt(rawWord.substring(2, 3));
-    	char orientation = rawWord.charAt(3);
+    	String[] split = rawWord.split(" ");
+    	String boardWord = split[4];
+    	int row = Integer.parseInt(split[0]);
+    	int col = Integer.parseInt(split[1]);
+    	int length = Integer.parseInt(split[2]);
+    	char orientation = split[3].charAt(0);
     	// Declare variables for available cells around the word
     	int availLeft = 0, availRight = 0, availUp = 0, availDown = 0;
     	// Declare lists to store words and locations
@@ -92,18 +94,18 @@ public class ScrabblePlayer
     	Word compare = new Word("", 0);
     	for (int i = 0; i < boardWord.length(); i++) {
     		wordLetters = wordLetters.substring(0, 7) + boardWord.charAt(i);    		// Store board letter
-    		int startR; int startC;    		// Declare player word's start row and column
-    		Word tempW;			// Declare temp word for comparison
+    		int startR, startC, loc = 0;    		// Declare player word's start row and column
+    		Word tempW = new Word("", 0);			// Declare temp word for comparison
     		if (orientation == 'h') {			// Check word with horizonal orientation
-    			tempW = getBestWord(wordLetters, availUp, availDown, wordLetters.charAt(7));	// Store best word
+    			tempW = getBestWord(wordLetters, availUp, availDown, wordLetters.charAt(7), row, col + i, 'h');	// Store best word
     			startC = col + i;	// Store starting row and column of the new word
-    			startR = row - tempW.getWord().indexOf(Character.toLowerCase(boardWord.charAt(i)));
+    			startR = row - tempW.getWord().indexOf("*");
     			startList.add(new int[]{startR, startC});
     			newOr = 'v';		// Set word's orientation
     		} else {				// Perform same operation for vertical orientation words
-    			tempW = getBestWord(wordLetters, availLeft, availRight, wordLetters.charAt(7));
+    			tempW = getBestWord(wordLetters, availLeft, availRight, wordLetters.charAt(7), row + i, col, 'v');
     			startR = row + i;
-    			startC = col - tempW.getWord().length() + tempW.getWord().indexOf(Character.toLowerCase(board[col][startR])) + 1;
+    			startC = col - tempW.getWord().indexOf("*");
     			startList.add(new int[]{startR, startC});
     			newOr = 'h';
     		}
@@ -114,8 +116,13 @@ public class ScrabblePlayer
     	}
 		int bestR = startList.get(index)[0];	// Fetch coordinates
     	int bestC = startList.get(index)[1];
-    	
-        return  new ScrabbleWord(compare.getWord().toUpperCase(), bestR, bestC, newOr);	// Return new word
+    	int intersect = compare.getWord().indexOf("*");
+    	if (compare.getWord().length() < 1) {			// Check that throws a dummy word and intersection index
+    		compare = new Word(" ", 0);		// to prevent the program from breaking
+    		intersect = 0;
+    	}
+    	String readyWord = compare.getWord().substring(0, intersect) + compare.getWord().substring(intersect + 1);
+        return  new ScrabbleWord(readyWord.toUpperCase(), bestR, bestC, newOr);	// Return new word
     }
     
     // String to get information from word on board
@@ -125,7 +132,7 @@ public class ScrabblePlayer
     		for (int j = 0; j < 15; j++)		
     			if (board[i][j] != ' ') {		// If board space contains non space character, fetch word and information
     				out = getOrientation(board, i, j);
-    				out = ("" + i + "" + j + "" + (out.length() - 1) + out);	// Return row, col, length, orientation, and
+    				out = (i + " " + j + " " + (out.length() - 1) + " " + out);	// Return row, col, length, orientation, and
     				return out;													//  contents of the word
     			}
     	return out;
@@ -134,22 +141,34 @@ public class ScrabblePlayer
     // Method that returns orientation and contents of word on the Scrabble board
     public String getOrientation (char[][] board, int r, int c) {
     	String out = "";				// Output string declared
+    	if (c == 14) {
+    		out += "v ";
+    		while (board[r][c] != ' ' && r <= 14)
+    			out += board[r++][c];
+    		return out;
+    	}
+    	if (r == 14) {
+    		out += "h ";
+    		while (board[r][c] != ' ' && c <= 14)
+    			out += board[r][c++];
+    		return out;
+    	}
     	if (board[r][c + 1] != ' ') {	// Check board space to the right for a character
-    		out += 'h';					// If found, add orientation to string
-    		while (board[r][c] != ' ')	// Get letters that make up string
+    		out += "h ";					// If found, add orientation to string
+    		while (board[r][c] != ' ' && c <= 14)	// Get letters that make up string
     			out += board[r][c++];	// Add to output string
     	} else {						// Repeat for vertical cases
-    		out += 'v';
-    		while (board[r][c] != ' ')
+    		out += "v ";
+    		while (board[r][c] != ' ' && r <= 14)
     			out += board[r++][c];
     	}
     	return out;						// Return output string
     }
     
     // Method that calls findWord() to get best word. 
-    public Word getBestWord (String letters, int back, int ahead, char c) {
+    public Word getBestWord (String letters, int back, int ahead, char c, int row, int col, char or) {
     	Word best = new Word ("", 0);
-    	best = findWord("", letters, 0, dictionary.getRoot(), new Word("", 0), false);
+    	best = findWord("", letters, dictionary.getRoot(), new Word("", 0), false, back, ahead, row, col, or);
     	return best;
     }
     
@@ -163,35 +182,116 @@ public class ScrabblePlayer
     }
     
     // Recursive method to find the highest point word from a set of characters
-    public Word findWord (String currWord, String options, int p, Node n, Word compare, boolean foundBoard) {
+    public Word findWord (String currWord, String options, Node n, Word compare, boolean foundBoard, int back, int ahead, int row, int col, char or) {
     	Word temp = compare;							// Store variables from parameters 
     	Node traverse = n;
-    	if (n.isEnd()) {							// Check if current Node can end a word
-    		if (temp.getPoints() < p)				// If so, check if it has more points than the given parameter
-    			temp = new Word(currWord, p);		// If it has more points, store as a new word
+    	if ((n.isEnd() && foundBoard) && currWord.length() > 2) {							// Check if current Node can end a word
+    		int index = currWord.indexOf("*");
+    		String newWord = currWord.substring(0, index) + currWord.substring(index + 1);
+    		int newPoints = 0, newRow = 0, newCol = 0;
+    		if (or == 'h') {
+    			newRow = row - index;
+    			newCol = col;
+    			if (newRow + newWord.length() < 15)
+    				newPoints = pointsByBoard(newWord, newRow, newCol, newWord.length(), or, index);
+    		} else {
+    			newRow = row;
+    			newCol = col - index;
+    			if (newCol + newWord.length() < 15)
+    				newPoints = pointsByBoard(newWord, newRow, newCol, newWord.length(), or, index);
+    		}
+    		if (temp.getPoints() < newPoints)				// If so, check if it has more points than the given parameter
+    			if (index <= back && (newWord.length() - index) <= ahead)
+    				temp = new Word(currWord, newPoints);		// If it has more points, store as a new word
     	}
     	for (int i = 0; i < options.length(); i++) {	// Loop through all available letters
-    		if (options.charAt(i) == '_') {				// Check for blank space, iterating through all 26 letters if the case
+    		Character c = Character.toLowerCase(options.charAt(i));
+    		if (c == '_') {				// Check for blank space, iterating through all 26 letters if the case
     			for (int j = 0; j < n.getChildren().size(); j++) {
     				traverse = n.getChildren().get(j);	// If letter is available, check the child
         			if (traverse != null && traverse.getLetter() != '*') {	// If valid, call findWord with the string
         				temp = findWord(currWord + '_', trimOut(options, i),//  appended with blank space
-        						p, traverse, temp, foundBoard);
+        						traverse, temp, foundBoard, back, ahead, row, col, or);
         			}
     			}
     		} else {						// If not blank, only check for child containing available letter
-    			traverse = n.getChild(options.charAt(i));
+    			traverse = n.getChild(c);
     			if (traverse != null) {
-    				if (i == options.length() - 1 && !foundBoard) 		// Check if board char has been found
-    					temp = findWord(currWord, trimOut(options, i),	// If yes, flag it has been found for
-    						p, traverse, temp, true);					//  future loops
+    				if (i == options.length() - 1 && !foundBoard) { 		 // Check if board char has been found
+    					temp = findWord(currWord + '*' + c, trimOut(options, i),	// If yes, flag it has been found for
+    						traverse, temp, true, back, ahead, row, col, or);   //  future loops
+    				}														
     				else					// Otherwise, amend character to string when found.
-    					temp = findWord(currWord + Character.toLowerCase(options.charAt(i)), trimOut(options, i),
-        						p + traverse.getPoints(), traverse, temp, foundBoard);
+    					temp = findWord(currWord + c, trimOut(options, i),
+        						traverse, temp, foundBoard, back, ahead, row, col, or);
     			}
     		}
     	}
     	return temp; 	// Return best word
+    }
+    
+    public int getPoints (Character c) {
+    	return pointVals[((int) c) - 96];
+    }
+    
+    public int pointsByBoard (String word, int startR, int startC, int length, char or, int index) {
+    	int doubleW = 0, tripleW = 0;
+    	int currR, currC;
+    	int points = 0;
+    	if (or == 'h') {
+    		currR = startR;
+    		currC = startC;
+    		for (int i = 0; i < length; i++) {
+    			if ((currR >= 0 && currR <= 14) && (currC >= 0 && currC <= 14))
+					if (i != index && word.charAt(i) != '_') {
+						switch (multi.getMulti(currR + i, currC)) {
+						case 1:
+							points += getPoints(Character.toLowerCase(word.charAt(i))) * 2;
+							break;
+						case 2:
+							points += getPoints(Character.toLowerCase(word.charAt(i))) * 3;
+							break;
+						case 3:
+							doubleW++;
+							break;
+						case 4:
+							tripleW++;
+							break;
+						default:
+							points += getPoints(Character.toLowerCase(word.charAt(i)));
+							break;
+						}
+    				}
+    		}
+    	} else {
+    		currR = startR;
+    		currC = startC;
+    		for (int i = 0; i < length; i++) {
+    			if ((currR >= 0 && currR <= 14) && (currC >= 0 && currC <= 14))
+					if (i != index && word.charAt(i) != '_') {
+						switch (multi.getMulti(currR, currC + i)) {
+						case 1:
+							points += getPoints(Character.toLowerCase(word.charAt(i))) * 2;
+							break;
+						case 2:
+							points += getPoints(Character.toLowerCase(word.charAt(i))) * 3;
+							break;
+						case 3:
+							doubleW++;
+							break;
+						case 4:
+							tripleW++;
+							break;
+						default:
+							points += getPoints(Character.toLowerCase(word.charAt(i)));
+							break;
+						}
+    				}
+    		}
+    	}
+    	points = points * (int) Math.pow(2, doubleW);
+    	points = points * (int) Math.pow(3, tripleW);
+    	return points;
     }
     
     /*

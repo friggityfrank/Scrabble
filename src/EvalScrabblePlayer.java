@@ -71,7 +71,7 @@ public class EvalScrabblePlayer {
      "51","91","15","55","95","135","19","59","99","139","513","913",      // triple letter score
      
      "11","22","33","44","113","212","311","410","131","122","113",        // double word score
-     "104","1010","1111","1212","1313",                                    // double word score
+     "104","1010","1111","1212","1313", "77",                              // double word score
      
      "00","70","07","014","140","147","714","1414"};                       // triple word score
      
@@ -82,7 +82,7 @@ public class EvalScrabblePlayer {
       "3L","3L","3L","3L","3L","3L","3L","3L","3L","3L","3L","3L",
       
       "2W","2W","2W","2W","2W","2W","2W","2W","2W","2W","2W",
-      "2W","2W","2W","2W","2W",
+      "2W","2W","2W","2W","2W","2W",
       
       "3W","3W","3W","3W","3W","3W","3W","3W"};
     
@@ -203,7 +203,7 @@ public class EvalScrabblePlayer {
         long endTime = bean.getCurrentThreadCpuTime();
 
         //System.out.println(endTime - startTime);
-        if ((endTime - startTime)/1.0E9 > 100)  // longer than 1 second
+        if ((endTime - startTime)/1.0E9 > 1)  // longer than 1 second
             {
             System.err.println("player.getScrabbleWord() exceeded 1 second");
             System.exit(-1);
@@ -364,7 +364,7 @@ public class EvalScrabblePlayer {
         if (memory <= 0)
             memory = 1;
         
-        double avgPoints = totalPoints / numOfGames;
+        double avgPoints = totalPoints / (double) numOfGames;
         System.out.printf("Average Points: %.4f\n", avgPoints);
 
         System.out.println("totalElapsedTime " + totalElapsedTime);
@@ -533,6 +533,13 @@ public class EvalScrabblePlayer {
         // Before checking, must remove the intersection part of the playWord and the starting word        
         // remove the intersection part
         String additionLetters = findAdditionLetters(initialWord, playWord);
+        
+        // if empty string return
+        if (additionLetters.length() == 0)
+        {
+            // invalid, because playerWord = initialWord
+            return null;
+        }
         
         // use arraylist to store the letters
         ArrayList<String> playerLetters = new ArrayList<String>();        

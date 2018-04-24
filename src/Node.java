@@ -3,11 +3,8 @@ import java.util.Collections;
 
 public class Node implements Comparable<Node> {
 	
-	private Character letter;
-	private int points;
-	private Node parent;
+	private char letter;
 	private ArrayList<Node> children = new ArrayList<Node>();
-	private int[] pointVals = {0, 1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4, 10};
 	
 	public Node () {
 		
@@ -16,36 +13,10 @@ public class Node implements Comparable<Node> {
 	// Constructor to store Letter information and parent Node
 	public Node (Character c, Node p) {
 		letter = Character.toLowerCase(c);
-		parent = p;
-		// Check if root
-		if (c == ' ')
-			points = 0;
-		// Check if blank space or '*' - assign parent's points + Letter's
-		//  point value if it is not
-		else if (letter != '_' && letter != '*')
-			points = pointVals[((int) letter) - 96] + p.getPoints();
-		// If the letter is a blank space, assign parent's points
-		else if (p != null)
-			points = p.getPoints();
-		// Otherwise, it is null and should be ignored
-		else
-			points = 0;
 	}
 	
 	public Character getLetter () {
 		return letter;
-	}
-	
-	public int getPoints () {
-		return points;
-	}
-	
-	public Node getParent () {
-		return parent;
-	}
-	
-	public void setPoints (int p) {
-		points = p;
 	}
 	
 	public ArrayList<Node> getChildren () {
@@ -60,15 +31,9 @@ public class Node implements Comparable<Node> {
 		return null;
 	}
 	
-	
-	
 	// Method to check if the Node has a child containing the passed character
 	public boolean isEnd () {
 		return (getChild('*') != null);
-	}
-	
-	public void setParent (Node p) {
-		parent = p;
 	}
 	
 	public void setChildren (ArrayList<Node> n) {
@@ -103,8 +68,5 @@ public class Node implements Comparable<Node> {
 		return 0;
 	}
 	
-	public String toString () {
-		return letter.toString();
-	}
 
 }
